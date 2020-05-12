@@ -24,8 +24,6 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import skewnorm, norm
 
-import yfinance as yf
-
 from utils import sharpe_ratio, annualized_sharpe_ratio, estimated_sr_std, probabilistic_sharpe_ratio, skew_to_alpha, moments
 # -
 
