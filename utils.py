@@ -4,16 +4,70 @@ import pandas as pd
 
 
 def sharpe_ratio(returns):
+    """
+    Calculate the estimated sharpe ratio (risk_free=0).
+
+    Parameters
+    ----------
+    returns: list, np.array, pd.Series, pd.DataFrame
+
+    Returns
+    -------
+    float, pd.Series
+    """
     return returns.mean() / returns.std(ddof=1)
 
 
 def annualized_sharpe_ratio(returns, periods=262):
+    """
+    Calculate the annualized estimated sharpe ratio (risk_free=0).
+
+    Parameters
+    ----------
+    returns: list, np.array, pd.Series, pd.DataFrame
+
+    periods: int
+        How many items in `returns` complete a Year.
+        If returns are daily: 262, weekly: 52, monthly: 12, ...
+
+    Returns
+    -------
+    float, pd.Series
+    """
     sr = sharpe_ratio(returns)
     sr = sr * np.sqrt(periods)
     return sr
 
 
-def estimated_sr_std(returns, skew=None, kurtosis=None, sr=None):
+def estimated_sr_std(returns=None, *, skew=None, kurtosis=None, sr=None):
+    """
+    Calculate the standard deviation of the sharpe ratio estimation.
+
+    Parameters
+    ----------
+    returns: list, np.array, pd.Series, pd.DataFrame
+        If no `returns` are passed it is mandatory to pass the other 3 parameters.
+
+    skew: float, list, np.array, pd.Series, pd.DataFrame
+        The third moment expressed in the same frequency as the other parameters.
+        `skew`=0 for normal returns.
+
+    kurtosis: float, list, np.array, pd.Series, pd.DataFrame
+        The fourth moment expressed in the same frequency as the other parameters.
+        `kurtosis`=3 for normal returns.
+
+    sr: float, list, np.array, pd.Series, pd.DataFrame
+        Sharpe ratio expressed in the same frequency as the other parameters.
+
+    Returns
+    -------
+    float, pd.Series
+
+    Notes
+    -----
+    This formula generalizes for both normal and non-normal returns.
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1821643
+    """
     if type(returns) != pd.DataFrame:
         _returns = pd.DataFrame(returns)
     else:
@@ -35,7 +89,38 @@ def estimated_sr_std(returns, skew=None, kurtosis=None, sr=None):
     return sr_std
 
 
-def probabilistic_sharpe_ratio(returns, sr_benchmark=0, sr=None, sr_std=None):
+def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_std=None):
+    """
+    Calculate the Probabilistic Sharpe Ratio (PSR).
+
+    Parameters
+    ----------
+    returns: list, np.array, pd.Series, pd.DataFrame
+        If no `returns` are passed it is mandatory to pass a `sr` and `sr_std`.
+
+    sr_benchmark: float
+        Benchmark sharpe ratio expressed in the same frequency as the other parameters.
+        By default set to zero (comparing against no investment skill).
+
+    sr: float, list, np.array, pd.Series, pd.DataFrame
+        Sharpe ratio expressed in the same frequency as the other parameters.
+
+    sr_std: float, list, np.array, pd.Series, pd.DataFrame
+        Standard deviation fo the Estimated sharpe ratio,
+        expressed in the same frequency as the other parameters.
+
+    Returns
+    -------
+    float, pd.Series
+
+    Notes
+    -----
+    PSR = probability that SR^ > SR*
+    SR^ = sharpe ratio estimated with `returns`, or `sr`
+    SR* = `sr_benchmark`
+
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1821643
+    """
     if sr is None:
         sr = sharpe_ratio(returns)
         sr_std = estimated_sr_std(returns)
@@ -50,13 +135,36 @@ def probabilistic_sharpe_ratio(returns, sr_benchmark=0, sr=None, sr_std=None):
     return psr
 
 
-def skew_to_alpha(s):
-    d = (np.pi / 2 * ((abs(s) ** (2 / 3)) / (abs(s) ** (2 / 3) + ((4 - np.pi) / 2) ** (2 / 3)))) ** 0.5
+def skew_to_alpha(skew):
+    """
+    Convert a skew to alpha parameter needed by scipy.stats.skewnorm(..).
+
+    Parameters
+    ----------
+    skew: float
+        Must be between [-0.999, 0.999] for avoiding complex numbers.
+
+    Returns
+    -------
+    float
+    """
+    d = (np.pi / 2 * ((abs(skew) ** (2 / 3)) / (abs(skew) ** (2 / 3) + ((4 - np.pi) / 2) ** (2 / 3)))) ** 0.5
     a = (d / ((1 - d ** 2) ** .5))
-    return a * np.sign(s)
+    return a * np.sign(skew)
 
 
 def moments(returns):
+    """
+    Calculate the four moments: mean, std, skew, kurtosis.
+
+    Parameters
+    ----------
+    returns: list, np.array, pd.Series, pd.DataFrame
+
+    Returns
+    -------
+    pd.Series, pd.DataFrame
+    """
     if type(returns) != pd.DataFrame:
         return pd.Series({'mean': np.mean(returns),
                           'std': np.std(returns, ddof=1),
