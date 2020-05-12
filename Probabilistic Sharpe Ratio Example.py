@@ -169,4 +169,7 @@ print('TRUE SR Annual. Strategy 2:', round(true_sr_ann_st2, 2))
 pd.DataFrame({'Strategy 1': pd.Series(oos_returns_st1).add(1).cumprod().sub(1).iloc[:262*3],
               'Strategy 2': pd.Series(oos_returns_st2).add(1).cumprod().sub(1).iloc[:262*3]}).plot()
 
+# NOTE: In this notebook we have checked the impact of the skewness in the SR^ but the kurtosis also have an impact on the SR^ and its estimated error. But there is no way for generating random returns with a predefined kurtosis.
+# > Let me know in a issue if you now one way to generate random returns with a desired kurtosis, or with a skewness greater than [-0.99, 0.99].
+
 
