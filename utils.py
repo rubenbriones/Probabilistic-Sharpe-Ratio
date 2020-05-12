@@ -48,3 +48,19 @@ def probabilistic_sharpe_ratio(returns, sr_benchmark=0, sr=None, sr_std=None):
         psr = psr[0]
 
     return psr
+
+
+def skew_to_alpha(s):
+    d = (np.pi / 2 * ((abs(s) ** (2 / 3)) / (abs(s) ** (2 / 3) + ((4 - np.pi) / 2) ** (2 / 3)))) ** 0.5
+    a = (d / ((1 - d ** 2) ** .5))
+    return a * np.sign(s)
+
+
+def moments(returns):
+    if type(returns) != pd.DataFrame:
+        return pd.Series({'mean': np.mean(returns),
+                          'std': np.std(returns, ddof=1),
+                          'skew': scipy.stats.skew(returns),
+                          'kurt': scipy.stats.kurtosis(returns, fisher=False)})
+    else:
+        return returns.apply(moments, axis=1)
