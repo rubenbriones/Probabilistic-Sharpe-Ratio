@@ -89,10 +89,10 @@ print(moments_st2)
 # -
 
 sr_st2 = sharpe_ratio(returns_st2)
-print('SR normal dist.:', sr_st2)
+print('SR st2 dist.:', sr_st2)
 
 sr_ann_st2 = annualized_sharpe_ratio(returns_st2)
-print('SR Annual. normal dist.:', round(sr_ann_st2, 2))
+print('SR Annual. st2 dist.:', round(sr_ann_st2, 2))
 
 # > Ooops, it seems that the Strategy 2 is worst than the Strategy 1... sure?
 
@@ -109,10 +109,10 @@ print('SR Annual. normal dist.:', round(sr_ann_st2, 2))
 SR_BENCHMARK = 0  # SR*
 
 psr_st1 = probabilistic_sharpe_ratio(returns_st1, sr_benchmark=SR_BENCHMARK)
-print('PSR skew_neg:', psr_st1)
+print('PSR st1:', psr_st1)
 
 psr_st2 = probabilistic_sharpe_ratio(returns_st2, sr_benchmark=SR_BENCHMARK)
-print('PSR normal:', psr_st2)
+print('PSR st2:', psr_st2)
 
 # > As you can see the Probabilistic Sharpe Ratio (PSR) says that despite of the lower SR^ of the second strategy, this strategy 2 have more chances that in the future its returns will have a TRUE SR greater than 0.  
 # **We can say with a 95.66% confidence that the strategy 2 it's a winner strategy, but we "only" have a certainty of 92.89% that the strategy 1 can generate *alpha* too.**
@@ -148,7 +148,7 @@ print(true_moments_st1)
 # -
 
 true_sr_ann_st1 = annualized_sharpe_ratio(oos_returns_st1)
-print('TRUE SR Annual. Strategy 1 (skew_neg dist.):', round(true_sr_ann_st1, 2))
+print('TRUE SR Annual. Strategy 1:', round(true_sr_ann_st1, 2))
 
 # +
 oos_returns_st2 = dist_st2.rvs(size=OOS_SIZE)
@@ -158,7 +158,7 @@ print(true_moments_st2)
 # -
 
 true_sr_ann_st2 = annualized_sharpe_ratio(oos_returns_st2)
-print('TRUE SR Annual. Strategy 2 (skew_neg dist.):', round(true_sr_ann_st2, 2))
+print('TRUE SR Annual. Strategy 2:', round(true_sr_ann_st2, 2))
 
 # ## Conclusions
 # #### We can see that in the long term the Strategy 2 is much better than the Strategy 1. Its TRUE SR is around 9.46 and the TRUE SR of Strategy 1 is around 5.43. 
