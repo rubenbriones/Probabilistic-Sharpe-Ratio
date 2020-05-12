@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def sharpe_ratio(returns):
+def estimated_sharpe_ratio(returns):
     """
     Calculate the estimated sharpe ratio (risk_free=0).
 
@@ -18,7 +18,7 @@ def sharpe_ratio(returns):
     return returns.mean() / returns.std(ddof=1)
 
 
-def annualized_sharpe_ratio(returns, periods=262):
+def ann_estimated_sharpe_ratio(returns, periods=262):
     """
     Calculate the annualized estimated sharpe ratio (risk_free=0).
 
@@ -34,12 +34,12 @@ def annualized_sharpe_ratio(returns, periods=262):
     -------
     float, pd.Series
     """
-    sr = sharpe_ratio(returns)
+    sr = estimated_sharpe_ratio(returns)
     sr = sr * np.sqrt(periods)
     return sr
 
 
-def estimated_sr_std(returns=None, *, skew=None, kurtosis=None, sr=None):
+def estimated_sharpe_ratio_std(returns=None, *, skew=None, kurtosis=None, sr=None):
     """
     Calculate the standard deviation of the sharpe ratio estimation.
 
@@ -78,7 +78,7 @@ def estimated_sr_std(returns=None, *, skew=None, kurtosis=None, sr=None):
     if kurtosis is None:
         kurtosis = pd.Series(scipy.stats.kurtosis(_returns, fisher=False), index=_returns.columns)
     if sr is None:
-        sr = sharpe_ratio(_returns)
+        sr = estimated_sharpe_ratio(_returns)
 
     n = len(_returns)
     sr_std = np.sqrt((1 + (0.5 * sr ** 2) - (skew * sr) + (((kurtosis - 3) / 4) * sr ** 2)) / (n - 1))
@@ -122,8 +122,8 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
     https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1821643
     """
     if sr is None:
-        sr = sharpe_ratio(returns)
-        sr_std = estimated_sr_std(returns)
+        sr = estimated_sharpe_ratio(returns)
+        sr_std = estimated_sharpe_ratio_std(returns)
 
     psr = scipy.stats.norm.cdf((sr - sr_benchmark) / sr_std)
 

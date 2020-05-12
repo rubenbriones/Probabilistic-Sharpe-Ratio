@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import skewnorm, norm
 
-from utils import sharpe_ratio, annualized_sharpe_ratio, estimated_sr_std, probabilistic_sharpe_ratio, skew_to_alpha, moments
+from utils import estimated_sharpe_ratio, ann_estimated_sharpe_ratio, estimated_sharpe_ratio_std, probabilistic_sharpe_ratio, skew_to_alpha, moments
 # -
 
 np.random.seed(0)
@@ -61,10 +61,10 @@ print(moments_st1)
 
 # Calculate their estimated Sharpe ratio (SR^). *It is "estimated" because it use the historical returns as a prediction of the future returns.*
 
-sr_st1 = sharpe_ratio(returns_st1)
+sr_st1 = estimated_sharpe_ratio(returns_st1)
 print('SR st1 dist.:', sr_st1)
 
-sr_ann_st1 = annualized_sharpe_ratio(returns_st1)
+sr_ann_st1 = ann_estimated_sharpe_ratio(returns_st1)
 print('SR Annual. st1 dist.:', round(sr_ann_st1, 2))
 
 # ## Strategy 2 - *Simulate a normal distribution of returns with better `mean` and same `std` as the strategy 1*
@@ -88,10 +88,10 @@ moments_st2 = moments(returns_st2)
 print(moments_st2)
 # -
 
-sr_st2 = sharpe_ratio(returns_st2)
+sr_st2 = estimated_sharpe_ratio(returns_st2)
 print('SR st2 dist.:', sr_st2)
 
-sr_ann_st2 = annualized_sharpe_ratio(returns_st2)
+sr_ann_st2 = ann_estimated_sharpe_ratio(returns_st2)
 print('SR Annual. st2 dist.:', round(sr_ann_st2, 2))
 
 # > Ooops, it seems that the Strategy 2 is worst than the Strategy 1... sure?
@@ -124,8 +124,8 @@ sns.distplot(pd.Series(returns_st1), hist=True, kde=True, color='red',  bins=SIZ
 sns.distplot(pd.Series(returns_st2), hist=True, kde=True, color='green',  bins=SIZE//2).set_title('Strategy 2 returns distribution')
 
 # +
-estimated_sr_std_st1 = estimated_sr_std(returns_st1)
-estimated_sr_std_st2 = estimated_sr_std(returns_st2)
+estimated_sr_std_st1 = estimated_sharpe_ratio_std(returns_st1)
+estimated_sr_std_st2 = estimated_sharpe_ratio_std(returns_st2)
 
 print('The estimated SR^ of strategy 1 have a stdDev of: ', estimated_sr_std_st1)
 print('The estimated SR^ of strategy 2 have a stdDev of: ', estimated_sr_std_st2)
@@ -147,7 +147,7 @@ true_moments_st1 = moments(oos_returns_st1)
 print(true_moments_st1)
 # -
 
-true_sr_ann_st1 = annualized_sharpe_ratio(oos_returns_st1)
+true_sr_ann_st1 = ann_estimated_sharpe_ratio(oos_returns_st1)
 print('TRUE SR Annual. Strategy 1:', round(true_sr_ann_st1, 2))
 
 # +
@@ -157,7 +157,7 @@ true_moments_st2 = moments(oos_returns_st2)
 print(true_moments_st2)
 # -
 
-true_sr_ann_st2 = annualized_sharpe_ratio(oos_returns_st2)
+true_sr_ann_st2 = ann_estimated_sharpe_ratio(oos_returns_st2)
 print('TRUE SR Annual. Strategy 2:', round(true_sr_ann_st2, 2))
 
 # ## Conclusions
