@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import skewnorm, norm
 
-from utils import estimated_sharpe_ratio, ann_estimated_sharpe_ratio, estimated_sharpe_ratio_std, probabilistic_sharpe_ratio, skew_to_alpha, moments
+from utils import estimated_sharpe_ratio, ann_estimated_sharpe_ratio, estimated_sharpe_ratio_stdev, probabilistic_sharpe_ratio, skew_to_alpha, moments
 # -
 
 np.random.seed(0)
@@ -124,8 +124,8 @@ sns.distplot(pd.Series(returns_st1), hist=True, kde=True, color='red',  bins=SIZ
 sns.distplot(pd.Series(returns_st2), hist=True, kde=True, color='green',  bins=SIZE//2).set_title('Strategy 2 returns distribution')
 
 # +
-estimated_sr_std_st1 = estimated_sharpe_ratio_std(returns_st1)
-estimated_sr_std_st2 = estimated_sharpe_ratio_std(returns_st2)
+estimated_sr_std_st1 = estimated_sharpe_ratio_stdev(returns_st1)
+estimated_sr_std_st2 = estimated_sharpe_ratio_stdev(returns_st2)
 
 print('The estimated SR^ of strategy 1 have a stdDev of: ', estimated_sr_std_st1)
 print('The estimated SR^ of strategy 2 have a stdDev of: ', estimated_sr_std_st2)
@@ -171,5 +171,18 @@ pd.DataFrame({'Strategy 1': pd.Series(oos_returns_st1).add(1).cumprod().sub(1).i
 
 # NOTE: In this notebook we have checked the impact of the skewness in the SR^ but the kurtosis also have an impact on the SR^ and its estimated error. But there is no way for generating random returns with a predefined kurtosis.
 # > Let me know in a issue if you now one way to generate random returns with a desired kurtosis, or with a skewness greater than [-0.99, 0.99].
+
+returns_st1
+
+# pd.Series.to_csv()
+pd.Series(returns_st1).to_csv('returns_st1.csv', index=False)
+
+ret= pd.read_csv('returns_st1.csv', header=None, squeeze=True)
+
+import quantstats as qs
+
+qs.stats.sharpe(ret, annualize=False)
+
+estimated_sharpe_ratio(ret)
 
 

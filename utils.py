@@ -9,7 +9,7 @@ def estimated_sharpe_ratio(returns):
 
     Parameters
     ----------
-    returns: list, np.array, pd.Series, pd.DataFrame
+    returns: np.array, pd.Series, pd.DataFrame
 
     Returns
     -------
@@ -18,45 +18,27 @@ def estimated_sharpe_ratio(returns):
     return returns.mean() / returns.std(ddof=1)
 
 
-def ann_estimated_sharpe_ratio(returns, periods=262):
-    """
-    Calculate the annualized estimated sharpe ratio (risk_free=0).
-
-    Parameters
-    ----------
-    returns: list, np.array, pd.Series, pd.DataFrame
-
-    periods: int
-        How many items in `returns` complete a Year.
-        If returns are daily: 262, weekly: 52, monthly: 12, ...
-
-    Returns
-    -------
-    float, pd.Series
-    """
-    sr = estimated_sharpe_ratio(returns)
-    sr = sr * np.sqrt(periods)
-    return sr
-
-
-def estimated_sharpe_ratio_std(returns=None, *, skew=None, kurtosis=None, sr=None):
+def estimated_sharpe_ratio_stdev(returns=None, *, n=None, skew=None, kurtosis=None, sr=None):
     """
     Calculate the standard deviation of the sharpe ratio estimation.
 
     Parameters
     ----------
-    returns: list, np.array, pd.Series, pd.DataFrame
-        If no `returns` are passed it is mandatory to pass the other 3 parameters.
+    returns: np.array, pd.Series, pd.DataFrame
+        If no `returns` are passed it is mandatory to pass the other 4 parameters.
 
-    skew: float, list, np.array, pd.Series, pd.DataFrame
+    n: int
+        Number of returns samples used for calculating `skew`, `kurtosis` and `sr`.
+
+    skew: float, np.array, pd.Series, pd.DataFrame
         The third moment expressed in the same frequency as the other parameters.
         `skew`=0 for normal returns.
 
-    kurtosis: float, list, np.array, pd.Series, pd.DataFrame
+    kurtosis: float, np.array, pd.Series, pd.DataFrame
         The fourth moment expressed in the same frequency as the other parameters.
         `kurtosis`=3 for normal returns.
 
-    sr: float, list, np.array, pd.Series, pd.DataFrame
+    sr: float, np.array, pd.Series, pd.DataFrame
         Sharpe ratio expressed in the same frequency as the other parameters.
 
     Returns
@@ -73,6 +55,8 @@ def estimated_sharpe_ratio_std(returns=None, *, skew=None, kurtosis=None, sr=Non
     else:
         _returns = returns.copy()
 
+    if n is None:
+        n = len(_returns)
     if skew is None:
         skew = pd.Series(scipy.stats.skew(_returns), index=_returns.columns)
     if kurtosis is None:
@@ -80,10 +64,11 @@ def estimated_sharpe_ratio_std(returns=None, *, skew=None, kurtosis=None, sr=Non
     if sr is None:
         sr = estimated_sharpe_ratio(_returns)
 
-    n = len(_returns)
     sr_std = np.sqrt((1 + (0.5 * sr ** 2) - (skew * sr) + (((kurtosis - 3) / 4) * sr ** 2)) / (n - 1))
 
-    if type(returns) != pd.DataFrame:
+    if type(returns) == pd.DataFrame:
+        sr_std = pd.Series(sr_std, index=returns.columns)
+    elif type(sr_std) not in (float, np.float64, pd.DataFrame):
         sr_std = sr_std.values[0]
 
     return sr_std
@@ -95,17 +80,17 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
 
     Parameters
     ----------
-    returns: list, np.array, pd.Series, pd.DataFrame
+    returns: np.array, pd.Series, pd.DataFrame
         If no `returns` are passed it is mandatory to pass a `sr` and `sr_std`.
 
     sr_benchmark: float
         Benchmark sharpe ratio expressed in the same frequency as the other parameters.
         By default set to zero (comparing against no investment skill).
 
-    sr: float, list, np.array, pd.Series, pd.DataFrame
+    sr: float, np.array, pd.Series, pd.DataFrame
         Sharpe ratio expressed in the same frequency as the other parameters.
 
-    sr_std: float, list, np.array, pd.Series, pd.DataFrame
+    sr_std: float, np.array, pd.Series, pd.DataFrame
         Standard deviation fo the Estimated sharpe ratio,
         expressed in the same frequency as the other parameters.
 
@@ -115,7 +100,7 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
 
     Notes
     -----
-    PSR = probability that SR^ > SR*
+    PSR(SR*) = probability that SR^ > SR*
     SR^ = sharpe ratio estimated with `returns`, or `sr`
     SR* = `sr_benchmark`
 
@@ -123,7 +108,8 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
     """
     if sr is None:
         sr = estimated_sharpe_ratio(returns)
-        sr_std = estimated_sharpe_ratio_std(returns)
+    if sr_std is None:
+        sr_std = estimated_sharpe_ratio_stdev(returns)
 
     psr = scipy.stats.norm.cdf((sr - sr_benchmark) / sr_std)
 
@@ -216,7 +202,7 @@ def moments(returns):
 
     Parameters
     ----------
-    returns: list, np.array, pd.Series, pd.DataFrame
+    returns: np.array, pd.Series, pd.DataFrame
 
     Returns
     -------
