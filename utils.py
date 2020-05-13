@@ -1,4 +1,4 @@
-import scipy
+import scipy.stats as scipy_stats
 import numpy as np
 import pandas as pd
 
@@ -58,9 +58,9 @@ def estimated_sharpe_ratio_stdev(returns=None, *, n=None, skew=None, kurtosis=No
     if n is None:
         n = len(_returns)
     if skew is None:
-        skew = pd.Series(scipy.stats.skew(_returns), index=_returns.columns)
+        skew = pd.Series(scipy_stats.skew(_returns), index=_returns.columns)
     if kurtosis is None:
-        kurtosis = pd.Series(scipy.stats.kurtosis(_returns, fisher=False), index=_returns.columns)
+        kurtosis = pd.Series(scipy_stats.kurtosis(_returns, fisher=False), index=_returns.columns)
     if sr is None:
         sr = estimated_sharpe_ratio(_returns)
 
@@ -111,7 +111,7 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
     if sr_std is None:
         sr_std = estimated_sharpe_ratio_stdev(returns)
 
-    psr = scipy.stats.norm.cdf((sr - sr_benchmark) / sr_std)
+    psr = scipy_stats.norm.cdf((sr - sr_benchmark) / sr_std)
 
     if type(returns) == pd.DataFrame:
         psr = pd.Series(psr, index=returns.columns)
@@ -168,7 +168,7 @@ def min_track_record_length(returns=None, sr_benchmark=0.0, prob=0.95, *, n=None
     if sr_std is None:
         sr_std = estimated_sharpe_ratio_stdev(returns)
 
-    min_trl = 1 + (sr_std ** 2 * (n - 1)) * (scipy.stats.norm.ppf(prob) / (sr - sr_benchmark)) ** 2
+    min_trl = 1 + (sr_std ** 2 * (n - 1)) * (scipy_stats.norm.ppf(prob) / (sr - sr_benchmark)) ** 2
 
     if type(returns) == pd.DataFrame:
         min_trl = pd.Series(min_trl, index=returns.columns)
@@ -180,7 +180,7 @@ def min_track_record_length(returns=None, sr_benchmark=0.0, prob=0.95, *, n=None
 
 def skew_to_alpha(skew):
     """
-    Convert a skew to alpha parameter needed by scipy.stats.skewnorm(..).
+    Convert a skew to alpha parameter needed by scipy_stats.skewnorm(..).
 
     Parameters
     ----------
@@ -211,7 +211,7 @@ def moments(returns):
     if type(returns) != pd.DataFrame:
         return pd.Series({'mean': np.mean(returns),
                           'std': np.std(returns, ddof=1),
-                          'skew': scipy.stats.skew(returns),
-                          'kurt': scipy.stats.kurtosis(returns, fisher=False)})
+                          'skew': scipy_stats.skew(returns),
+                          'kurt': scipy_stats.kurtosis(returns, fisher=False)})
     else:
         return returns.apply(moments, axis=1)

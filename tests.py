@@ -1,5 +1,4 @@
 import unittest
-import scipy
 import numpy as np
 import pandas as pd
 from pathlib import Path
