@@ -24,7 +24,8 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import skewnorm, norm
 
-from utils import estimated_sharpe_ratio, ann_estimated_sharpe_ratio, estimated_sharpe_ratio_stdev, probabilistic_sharpe_ratio, skew_to_alpha, moments
+from utils import skew_to_alpha, moments
+from sharpe_ratio_stats import estimated_sharpe_ratio, ann_estimated_sharpe_ratio, estimated_sharpe_ratio_stdev, probabilistic_sharpe_ratio
 # -
 
 np.random.seed(0)
