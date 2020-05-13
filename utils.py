@@ -18,6 +18,27 @@ def estimated_sharpe_ratio(returns):
     return returns.mean() / returns.std(ddof=1)
 
 
+def ann_estimated_sharpe_ratio(returns, periods=261):
+    """
+    Calculate the annualized estimated sharpe ratio (risk_free=0).
+
+    Parameters
+    ----------
+    returns: np.array, pd.Series, pd.DataFrame
+
+    periods: int
+        How many items in `returns` complete a Year.
+        If returns are daily: 261, weekly: 52, monthly: 12, ...
+
+    Returns
+    -------
+    float, pd.Series
+    """
+    sr = estimated_sharpe_ratio(returns)
+    sr = sr * np.sqrt(periods)
+    return sr
+
+
 def estimated_sharpe_ratio_stdev(returns=None, *, n=None, skew=None, kurtosis=None, sr=None):
     """
     Calculate the standard deviation of the sharpe ratio estimation.
