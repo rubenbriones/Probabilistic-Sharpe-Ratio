@@ -46,11 +46,17 @@ SKEW_RETURNS = -0.99  # must be between [-0.99, 0.99]
 alpha = skew_to_alpha(SKEW_RETURNS)
 
 dist_st1 = skewnorm(loc=MEAN_RETURNS, scale=STD_RETURNS, a=alpha)
+# -
 
 # NOTE: scipy.skewnorm can not mantain the mean and std of the distribution while changing the skewness
-true_mean = dist_st1.stats('m').item()
-true_std  = np.sqrt(dist_st1.stats('v').item())
-# -
+true_mean_st1 = dist_st1.stats('m').item()
+true_std_st1  = np.sqrt(dist_st1.stats('v').item())
+true_skew_st1  = dist_st1.stats('s').item()
+true_kurt_st1  = dist_st1.stats('k').item()+3
+print('Long term true weekly mean returns st1: {:.2%}'.format(true_mean_st1))
+print('Long term true std returns st1: {:.2%}'.format(true_std_st1))
+print('Long term true skew returns st1: {:.2f}'.format(true_skew_st1))
+print('Long term true kurt returns st1: {:.2f}'.format(true_kurt_st1))
 
 # Generates random **weekly returns** and check their moments statistic 
 # (in a large sample the *skew* should be equal to `skew_returns`, **the other moments are not guaranteed to acommplish our initial conditions**)
@@ -84,6 +90,15 @@ EXTRA_EDGE = 0.0012
 dist_st2 = norm(loc=true_mean+EXTRA_EDGE, scale=true_std)
 # -
 
+true_mean_st2 = dist_st2.stats('m').item()
+true_std_st2  = np.sqrt(dist_st2.stats('v').item())
+true_skew_st2  = dist_st2.stats('s').item()
+true_kurt_st2  = dist_st2.stats('k').item()+3
+print('Long term true weekly mean returns st2: {:.2%}'.format(true_mean_st2))
+print('Long term true std returns st2: {:.2%}'.format(true_std_st2))
+print('Long term true skew returns st2: {:.2f}'.format(true_skew_st2))
+print('Long term true kurt returns st2: {:.2f}'.format(true_kurt_st2))
+
 # Generates random **weekly returns** and check their moments statistic (in a large sample the *mean* and *std* should be equal to the `moments_st1`, and the *skew* should be 0 and *kurtosis* 3)
 
 # +
@@ -103,7 +118,7 @@ print('SR Annual. st2 dist.:', round(sr_ann_st2, 2))
 
 # > Ooops, it seems that the Strategy 2 is worst than the Strategy 1... sure?
 
-# ## Probabilistic Sharep Ratio (PSR)
+# ## Probabilistic Sharpe Ratio (PSR)
 #
 # At this point, imagine that you want to invest your money in one of these two differenet investing strategies, so ***which one will you choose?***
 #
@@ -175,6 +190,11 @@ print('TRUE SR Annual. Strategy 2:', round(true_sr_ann_st2, 2))
 
 pd.DataFrame({'Strategy 1': pd.Series(oos_returns_st1).add(1).cumprod().sub(1).iloc[:52*5],
               'Strategy 2': pd.Series(oos_returns_st2).add(1).cumprod().sub(1).iloc[:52*5]}).plot()
+
+# With a density plot we can see how the Strategy 1 have a bigger tail in the negative side, that makes it have a higher risk.
+
+pd.DataFrame({'Strategy 1': pd.Series(oos_returns_st1).iloc[:10000],
+              'Strategy 2': pd.Series(oos_returns_st2).iloc[:10000]}).plot.density()
 
 # NOTE: In this notebook we have checked the impact of the skewness in the SR^ but the kurtosis also have an impact on the SR^ and its estimated error. But there is no way for generating random returns with a predefined kurtosis.
 # > Let me know in a issue if you now one way to generate random returns with a desired kurtosis, or with a skewness greater than [-0.99, 0.99].

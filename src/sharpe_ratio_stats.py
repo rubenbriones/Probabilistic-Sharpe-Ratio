@@ -18,7 +18,7 @@ def estimated_sharpe_ratio(returns):
     return returns.mean() / returns.std(ddof=1)
 
 
-def ann_estimated_sharpe_ratio(returns, periods=261):
+def ann_estimated_sharpe_ratio(returns=None, periods=261, *, sr=None):
     """
     Calculate the annualized estimated sharpe ratio (risk_free=0).
 
@@ -30,11 +30,15 @@ def ann_estimated_sharpe_ratio(returns, periods=261):
         How many items in `returns` complete a Year.
         If returns are daily: 261, weekly: 52, monthly: 12, ...
 
+    sr: float, np.array, pd.Series, pd.DataFrame
+        Sharpe ratio to be annualized, it's frequency must be coherent with `periods`
+
     Returns
     -------
     float, pd.Series
     """
-    sr = estimated_sharpe_ratio(returns)
+    if sr is None:
+        sr = estimated_sharpe_ratio(returns)
     sr = sr * np.sqrt(periods)
     return sr
 
@@ -130,7 +134,7 @@ def probabilistic_sharpe_ratio(returns=None, sr_benchmark=0.0, *, sr=None, sr_st
     if sr is None:
         sr = estimated_sharpe_ratio(returns)
     if sr_std is None:
-        sr_std = estimated_sharpe_ratio_stdev(returns)
+        sr_std = estimated_sharpe_ratio_stdev(returns, sr=sr)
 
     psr = scipy_stats.norm.cdf((sr - sr_benchmark) / sr_std)
 
@@ -187,7 +191,7 @@ def min_track_record_length(returns=None, sr_benchmark=0.0, prob=0.95, *, n=None
     if sr is None:
         sr = estimated_sharpe_ratio(returns)
     if sr_std is None:
-        sr_std = estimated_sharpe_ratio_stdev(returns)
+        sr_std = estimated_sharpe_ratio_stdev(returns, sr=sr)
 
     min_trl = 1 + (sr_std ** 2 * (n - 1)) * (scipy_stats.norm.ppf(prob) / (sr - sr_benchmark)) ** 2
 
