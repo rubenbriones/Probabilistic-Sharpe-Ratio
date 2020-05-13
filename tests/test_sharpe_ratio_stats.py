@@ -10,7 +10,7 @@ from src.sharpe_ratio_stats import estimated_sharpe_ratio, estimated_sharpe_rati
 class TestSharpeRatio(unittest.TestCase):
 
     def setUp(self):
-        path = Path('.')
+        path = Path(__file__).parent
         self.returns = pd.read_csv(path / 'returns_for_tests.csv', header=None, squeeze=True)
 
     def test_estimated_sharpe_ratio(self):
