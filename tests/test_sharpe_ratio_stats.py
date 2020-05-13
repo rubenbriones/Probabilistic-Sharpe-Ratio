@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from utils import estimated_sharpe_ratio, estimated_sharpe_ratio_stdev, \
+from src.sharpe_ratio_stats import estimated_sharpe_ratio, estimated_sharpe_ratio_stdev, \
     probabilistic_sharpe_ratio, min_track_record_length
 
 
@@ -11,7 +11,7 @@ class TestSharpeRatio(unittest.TestCase):
 
     def setUp(self):
         path = Path('.')
-        self.returns = pd.read_csv(path / 'test_returns.csv', header=None, squeeze=True)
+        self.returns = pd.read_csv(path / 'returns_for_tests.csv', header=None, squeeze=True)
 
     def test_estimated_sharpe_ratio(self):
         EXPECTED_SR = 0.24171729852769172
