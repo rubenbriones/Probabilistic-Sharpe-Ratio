@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/rubenbriones/Probabilistic-Sharpe-Ratio.svg?branch=master)](https://travis-ci.com/rubenbriones/Probabilistic-Sharpe-Ratio)
+[![codecov](https://codecov.io/gh/rubenbriones/Probabilistic-Sharpe-Ratio/branch/master/graph/badge.svg)](https://codecov.io/gh/rubenbriones/Probabilistic-Sharpe-Ratio)
+
 # Probabilistic-Sharpe-Ratio
 Probabilistic Sharpe Ratio example in Python (by Marcos López de Prado)
 
