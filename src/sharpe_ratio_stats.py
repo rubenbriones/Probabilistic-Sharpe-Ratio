@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 from scipy import stats as scipy_stats
@@ -201,3 +202,116 @@ def min_track_record_length(returns=None, sr_benchmark=0.0, prob=0.95, *, n=None
         min_trl = min_trl[0]
 
     return min_trl
+
+
+def num_independent_trials(trials_returns=None, *, m=None, p=None):
+    """
+    Calculate the number of independent trials.
+    
+    Parameters
+    ----------
+    trials_returns: pd.DataFrame
+        All trials returns, not only the independent trials.
+        
+    m: int
+        Number of total trials.
+        
+    p: float
+        Average correlation between all the trials.
+
+    Returns
+    -------
+    int
+    """
+    if m is None:
+        m = trials_returns.shape[1]
+        
+    if p is None:
+        corr_matrix = trials_returns.corr()
+        p = corr_matrix.values[np.triu_indices_from(corr_matrix.values,1)].mean()
+        
+    n = p + (1 - p) * m
+    
+    n = int(n)+1  # round up
+    
+    return n
+
+
+def expected_maximum_sr(trials_returns=None, expected_mean_sr=0.0, *, independent_trials=None, trials_sr_std=None):
+    """
+    Compute the expected maximum Sharpe ratio (Analytically)
+    
+    Parameters
+    ----------
+    trials_returns: pd.DataFrame
+        All trials returns, not only the independent trials.
+        
+    expected_mean_sr: float
+        Expected mean SR, usually 0. We assume that random startegies will have a mean SR of 0,
+        expressed in the same frequency as the other parameters.
+        
+    independent_trials: int
+        Number of independent trials, must be between 1 and `trials_returns.shape[1]`
+        
+    trials_sr_std: float
+        Standard deviation fo the Estimated sharpe ratios of all trials,
+        expressed in the same frequency as the other parameters.
+
+    Returns
+    -------
+    float
+    """
+    emc = 0.5772156649 # Euler-Mascheroni constant
+    
+    if independent_trials is None:
+        independent_trials = num_independent_trials(trials_returns)
+    
+    if trials_sr_std is None:
+        srs = estimated_sharpe_ratio(trials_returns)
+        trials_sr_std = srs.std()
+    
+    maxZ = (1 - emc) * scipy_stats.norm.ppf(1 - 1./independent_trials) + emc * scipy_stats.norm.ppf(1 - 1./(independent_trials * np.e))
+    expected_max_sr = expected_mean_sr + (trials_sr_std * maxZ)
+    
+    return expected_max_sr
+
+
+def deflated_sharpe_ratio(trials_returns=None, returns_selected=None, expected_mean_sr=0.0, *, expected_max_sr=None):
+    """
+    Calculate the Deflated Sharpe Ratio (PSR).
+
+    Parameters
+    ----------
+    trials_returns: pd.DataFrame
+        All trials returns, not only the independent trials.
+        
+    returns_selected: pd.Series
+
+    expected_mean_sr: float
+        Expected mean SR, usually 0. We assume that random startegies will have a mean SR of 0,
+        expressed in the same frequency as the other parameters.
+        
+    expected_max_sr: float
+        The expected maximum sharpe ratio expected after running all the trials,
+        expressed in the same frequency as the other parameters.
+
+    Returns
+    -------
+    float
+
+    Notes
+    -----
+    DFS = PSR(SR⁰) = probability that SR^ > SR⁰
+    SR^ = sharpe ratio estimated with `returns`, or `sr`
+    SR⁰ = `max_expected_sr`
+
+    https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2460551
+    """
+    if expected_max_sr is None:
+        expected_max_sr = expected_maximum_sr(trials_returns, expected_mean_sr)
+        
+    dsr = probabilistic_sharpe_ratio(returns=returns_selected, sr_benchmark=expected_max_sr)
+
+    return dsr
+
+
